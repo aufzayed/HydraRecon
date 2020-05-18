@@ -1,67 +1,54 @@
-#!/usr/bin/evn python3
-from core.crawl.regex import *
-
+#!/usr/bin/env python3
 import os
 import re
+from sys import exit
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
+from core.crawl.regex import endpoints_regex
 
-from core.basic.helpers import sanitizer, relative_to_absolute
+
+def get_links(path):
+    js_links = set()
+    files = os.listdir(path)
+    for file in files:
+        file_path = f'{path}/{file}'
+        with open(file_path) as html_file:
+            html_parser = BeautifulSoup(html_file, 'html.parser')
+            scripts = html_parser.find_all('script')
+            for tag in scripts:
+                if tag.get('src') is not None:
+                    js_links.add(tag.get('src'))
+    return js_links
 
 
-def js_parser(domain, path):
-    re_endpoints = re.compile(endpoints_regex, re.VERBOSE)  # re to match endpoints
-    re_secrets = re.compile(secrets_regex, re.VERBOSE)  # re to match secrets
-    response = requests.get(f'http://{domain}/')
-    name = sanitizer(response.url)
-    template = {name: {'secrets': set(), 'endpoints': set()}}
-    print(f'[#] Parsing {name}')
-    html_parser = BeautifulSoup(relative_to_absolute(response.text, response.url), 'html.parser')
-    scripts = html_parser.find_all('script')
-    for tag in scripts:
-        src = tag.get('src')
-        # find endpoints and secrets in js files
-        if src is not None:
-            # load js files
-            try:
-                load_js = requests.get(src).text
+found_endpoints = set()
 
-                match_endpoints = re_endpoints.findall(load_js)
-                for end in match_endpoints:
-                    for i in end:
-                        if i != '':
-                            template[name]['endpoints'].add(i)
-                match_secrets = re_secrets.findall(load_js)
-                for sec in match_secrets:
-                    template[name]['secrets'].add(sec)
-            except requests.ConnectionError:
-                pass
-        # find endpoints and secrets in script tags
-        elif src is None:
-            code = tag.string
-            try:
-                match_endpoints = re_endpoints.findall(code)
-                for end in match_endpoints:
-                    for i in end:
-                        if i != '':
-                            template[name]['endpoints'].add(i)
-                match_secrets = re_secrets.findall(code)
-                for sec in match_secrets:
-                    template[name]['secrets'].add(sec)
-            except TypeError:
-                pass
-    save_path = f'{path}/hydra_report/crawler/js_parser_results/'
-    file_name = list(template.keys())[0]
+
+def js_parser(link):
+    find_endpoints = re.compile(endpoints_regex, re.VERBOSE)
     try:
-        os.mkdir(f'{save_path}{file_name}')
-    except FileExistsError:
+        response = requests.get(link)
+        endpoints = find_endpoints.findall(response.text)
+        host = urlparse(response.url)
+        for e in endpoints:
+            for i in e:
+                if i != '':
+                    if i[0:8] == 'http://' or i[0:9] == 'https://':
+                        found_endpoints.add(i)
+                    elif i[0:2] == '//':
+                        found_endpoints.add(f'http:{i}')
+                    elif i[0] == '/' and i[1] != '/':
+                        found_endpoints.add(f'{host.scheme}://{host.hostname}{i}')
+                    elif i[0] == '.':
+                        found_endpoints.add(f'{host.scheme}://{host.hostname}/{i}')
+    except requests.ConnectionError:
         pass
-    with open(f'{save_path}{file_name}/endpoints.txt', 'a') as ends:
-        for k in template.keys():
-            for i in template[k]['endpoints']:
-                ends.write(f'{i}\n')
-    with open(f'{save_path}{file_name}/secrets.txt', 'a') as secrets:
-        for k in template.keys():
-            for i in template[k]['secrets']:
-                secrets.write(f'{i}\n')
+    except KeyboardInterrupt:
+        exit('Bye!')
 
+
+def save(path):
+    with open(f'{path}/hydra_report/crawler/js_parser_results.txt', 'a') as results:
+        for i in found_endpoints:
+            results.write(f'{i}\n')

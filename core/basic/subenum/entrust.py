@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from sys import exit
 import json
 import requests
 
@@ -23,3 +24,5 @@ def enumerator(domain):
         pass
     except json.decoder.JSONDecodeError:
         return []
+    except KeyboardInterrupt:
+        exit('Bye!')

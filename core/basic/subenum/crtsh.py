@@ -1,4 +1,5 @@
 #!/usr/bin/evn python3
+from sys import exit
 import json
 import requests
 
@@ -12,6 +13,8 @@ def requester(domain, depth=1):
             return response.text
     except requests.ConnectionError:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
 
 
 def enumerator(domain, depth):
@@ -32,7 +35,10 @@ def enumerator(domain, depth):
                     pass
         except json.decoder.JSONDecodeError:
             pass
-
+        except TypeError:
+            pass
+        except KeyboardInterrupt:
+            exit('Bye!')
         depth -= 1
     else:
         pass

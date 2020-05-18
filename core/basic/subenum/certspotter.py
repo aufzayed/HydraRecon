@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from sys import exit
 import json
 import requests
 
@@ -17,3 +18,7 @@ def enumerator(target):
         pass
     except requests.ConnectionError:
         pass
+    except TypeError:
+        pass
+    except KeyboardInterrupt:
+        exit('Bye!')

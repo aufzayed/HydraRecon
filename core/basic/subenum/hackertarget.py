@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from sys import exit
 import requests
 
 
@@ -10,4 +11,6 @@ def enumerator(domain):
             domains.append(i.split(',')[0])
     except requests.ConnectionError:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
     return set(domains)

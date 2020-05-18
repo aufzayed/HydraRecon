@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import socket
+from sys import exit
 from concurrent.futures import ThreadPoolExecutor
 
 scanner_results = set()
@@ -16,6 +17,8 @@ def port_scanner(host, port):
                 pass
         except socket.gaierror:
             pass
+        except KeyboardInterrupt:
+            exit('Bye!')
 
 
 xlarge = ("81", "300", "591", "593", "832", "981", "1010", "1311", "2082", "2087", "2095",

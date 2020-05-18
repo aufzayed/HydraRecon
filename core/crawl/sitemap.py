@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+from sys import exit
 import requests
 from bs4 import BeautifulSoup as bsoup
 
@@ -28,6 +29,8 @@ def get_sitemap(your_input):
                 return 0
         except requests.ConnectionError:
             pass
+        except KeyboardInterrupt:
+            exit('Bye!')
     elif re.match(domain_pattern, your_input):
         try:
             sitemap_xml = requests.get(f'http://{your_input}/sitemap.xml')
@@ -40,6 +43,8 @@ def get_sitemap(your_input):
                 return 0
         except requests.ConnectionError:
             pass
+        except KeyboardInterrupt:
+            exit('Bye!')
 
 
 def xml_parse(domain):
@@ -50,15 +55,24 @@ def xml_parse(domain):
             yield url.string
     except Exception:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
+
+
+sitemap_urls = set()
 
 
 def get_urls(domain):
-    urls = []
     for url in xml_parse(domain):
         if url.endswith('.xml'):
             for u in xml_parse(url):
-                urls.append(u)
+                sitemap_urls.add(u)
         else:
-            urls.append(url)
+            sitemap_urls.add(url)
+    return
 
-    return urls
+
+def save(path):
+    with open(f'{path}/hydra_report/crawler/sitemap_urls.txt', 'w') as results:
+        for url in sitemap_urls:
+            results.write(f'{url}\n')

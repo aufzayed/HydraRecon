@@ -77,7 +77,8 @@ parser.add_argument('--config', help='initializing config file', action='store_t
 parser.add_argument('-d', '--domain', metavar='', help='domain to crawl or recon')
 parser.add_argument('-p', '--ports', metavar='', help='ports to scan: (small | large | xlarge). default: small',
                     default='small')
-parser.add_argument('-T', '--timeout', metavar='', help='control http request timeout in seconds, default: 1s', default=1, type=int)
+parser.add_argument('-T', '--timeout', metavar='', help='control http request timeout in seconds, default: 1s',
+                    default=1, type=int)
 parser.add_argument('-t', '--threads', metavar='', help='number of threads, default: 10', default=10, type=int)
 parser.add_argument('-o', '--out', metavar='', help='path to save report, default : home directory')
 
@@ -91,10 +92,6 @@ def init_hydra_report(path):
         os.mkdir(f'{path}/hydra_report/response_body')
         os.mkdir(f'{path}/hydra_report/screenshots')
         os.mkdir(f'{path}/hydra_report/crawler')
-        os.mkdir(f'{path}/hydra_report/crawler/js_parser_results')
-        os.mkdir(f'{path}/hydra_report/crawler/robots')
-        os.mkdir(f'{path}/hydra_report/crawler/sitemap')
-        os.mkdir(f'{path}/hydra_report/crawler/wayback')
     except FileExistsError:
         pass
 
@@ -106,7 +103,7 @@ def subdomain_enum(domain, path):
     print('[#] certspotter API')
     _cs = certspotter.enumerator(domain)
     print('[#] crt.sh API')
-    _crt = crtsh.enumerator(domain, depth=5)
+    _crt = crtsh.enumerator(domain, depth=1)
     print('[#] bufferover API')
     _dbo = dnsbufferover.enumerator(domain)
     print('[#] entrust API')
@@ -151,6 +148,15 @@ def take_screenshot(path):
     screenshot.screenshot(path)
 
 
+def parse_js(path, threads):
+    print('[#] Parsing Javascript Files')
+    js_links = jsparser.get_links(f'{path}/hydra_report/response_body')
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        for link in js_links:
+            executor.submit(jsparser.js_parser, link)
+    jsparser.save(path)
+
+
 def gurl_crawler(path, domain):
     print(f'[#] Collecting {domain} urls from wayback machine')
     _wb_crawler = gurl.wayback_machine(domain)
@@ -160,23 +166,29 @@ def gurl_crawler(path, domain):
     _us_crawler = gurl.url_scan(domain)
     print(f'[#] Collecting {domain} urls from virus total')
     _vt_crawler = gurl.virus_total(domain)
-    with open(f'{path}/hydra_report/crawler/wayback/{domain}.txt', 'a') as wb_urls:
+    with open(f'{path}/hydra_report/crawler/{domain}.wayback.txt', 'a') as wb_urls:
         for url in itertools.chain(_wb_crawler, _cc_crawler, _us_crawler, _vt_crawler):
             wb_urls.write(f'{url}\n')
 
 
-def crawl_robots(path, domain):
+def crawl_robots(path, threads,  domain):
     print(f'[#] Collecting {domain} robots.txt urls')
-    with open(f'{path}/hydra_report/crawler/robots/{domain}.txt', 'a') as robots_urls:
-        for url in robots.robots(domain):
-            robots_urls.write(f'{url}\n')
+    with open(f'{path}/hydra_report/session.json') as session:
+        hosts = json.load(session)
+        with ThreadPoolExecutor(max_workers=threads) as executor:
+            for host in hosts:
+                executor.submit(robots.robots, host['url'])
+    robots.save(path)
 
 
-def crawl_sitemap(path, domain):
+def crawl_sitemap(path, threads, domain):
     print(f'[#] Collecting {domain} sitemap urls')
-    for url in sitemap.get_urls(domain):
-        with open(f'{path}/hydra_report/crawler/sitemap/{domain}.txt', 'a') as sitemap_urls:
-            sitemap_urls.write(f'{url}\n')
+    with open(f'{path}/hydra_report/session.json') as session:
+        hosts = json.load(session)
+        with ThreadPoolExecutor(max_workers=threads) as executor:
+            for host in hosts:
+                executor.submit(sitemap.get_urls, host)
+    sitemap.save(path)
 
 
 if args.config:
@@ -232,10 +244,16 @@ elif not args.basic and args.crawl:
         path_to_save = HOME_PATH
     else:
         path_to_save = args.out
-    jsparser.js_parser(args.domain, path_to_save)
+
+    if args.threads == 10:
+        workers = 10
+    else:
+        workers = args.threads
+
+    parse_js(path_to_save, workers)
     gurl_crawler(path_to_save, args.domain)
-    crawl_robots(path_to_save, args.domain)
-    crawl_sitemap(path_to_save, args.domain)
+    crawl_robots(path_to_save, workers, args.domain)
+    crawl_sitemap(path_to_save, workers,  args.domain)
 
 else:
     pass

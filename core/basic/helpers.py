@@ -9,42 +9,40 @@ def relative_to_absolute(file, domain):
     links = parser.find_all('link')
     scripts = parser.find_all('script')
 
-    # manipulate script tags src
     for script in scripts:
         if script.get('src'):
-            if script['src'].startswith('http://') | script['src'].startswith(
-                    'https://'):
+            if script['src'][0:8] == 'http://' or script['src'][0:9] == 'https://':
                 pass
-            elif script['src'].startswith('//'):
+            elif script['src'][0:2] == '//':
                 script['src'] = f'http:{script["src"]}'
-            else:
+            elif script['src'][0] == '/' and script['src'][1] != '/':
                 script['src'] = f'{domain}{script["src"]}'
+            elif script['src'][0] != '/' and script['src'][0] != '.':
+                script['src'] = f'{domain}/{script["src"]}'
         else:
             pass
 
-    # manipulate link tags src
     for link in links:
         if link.get('href'):
-            if link['href'].startswith('//') | link['href'].startswith('http://') | link['href'].startswith(
-                    'https://'):
+            if link['href'][0:2] == '//' or link['href'][0:8] == 'http://' or link['href'][0:9] == 'https://':
                 pass
-            else:
+            elif link['href'][0] == '/' and link['src'][1] != '/':
+                link['href'] = f'{domain}{link["href"]}'
+            elif link['href'][0] == '.':
                 link['href'] = f'{domain}{link["href"]}'
 
-    # manipulate img tags src
     for img in imgs:
         if img.get('src'):
-            if img['src'].startswith('//') | img['src'].startswith('http://') | img['src'].startswith(
-                    'https://') | \
-                    img['src'].startswith('data:'):
+            if img['src'][0:2] == '//' or img['src'][0:8] == 'http://' or img['src'][0:9] == 'https://' or img['src'][0:6] == 'data:':
                 pass
-            else:
+            elif img['src'][0] == '/' and img['src'][1] != '/':
                 img['src'] = f'{domain}{img["src"]}'
+            elif img['src'][0] == '.':
+                img['src'] = f'{domain}/{img["src"]}'
 
     return parser.prettify()
 
 
-# convert url to storable file name
 def sanitizer(string):
     letters_to_escape = ['/', ':', '.']
     final_str = []

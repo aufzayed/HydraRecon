@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-
+from sys import exit
 import base64
 import json
 import requests
-
 
 
 def b64(cursor):
@@ -33,6 +32,8 @@ def enumerator(domain, apikey=None):
                 pass
             except json.decoder.JSONDecodeError:
                 pass
+            except KeyboardInterrupt:
+                exit('Bye!')
     else:
         return domains
     return set(domains)

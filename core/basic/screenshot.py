@@ -1,5 +1,6 @@
 #!/urs/bin/env python3
 import os
+from sys import exit
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
@@ -17,5 +18,7 @@ def screenshot(path):
 
         except Exception as e:
             print(f'Runtime Error:\n{e}')
+        except KeyboardInterrupt:
+            exit('Bye!')
 
     driver.quit()

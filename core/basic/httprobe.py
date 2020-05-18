@@ -1,6 +1,7 @@
 #!/usr/bin/env/ python3
 import json
 import requests
+from sys import exit
 from urllib.parse import urlparse
 from core.basic.helpers import sanitizer, relative_to_absolute
 
@@ -50,7 +51,9 @@ def probe(domain, path_to_save, timeout=1, user_agent=USER_AGENT):
     except requests.ConnectionError:
         pass
     except requests.exceptions.ReadTimeout:
-        print('ReadTimeout Error')
+        print(f'[#] {domain} -> ReadTimeout Error')
+    except KeyboardInterrupt:
+        exit('Bye!')
     return json.dumps(response)
 
 

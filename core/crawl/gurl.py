@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from sys import exit
 import json
 import requests
 import base64
@@ -10,7 +11,7 @@ def wayback_machine(domain):
     try:
         parameters = \
             {
-                'url': f'{domain}/*',
+                'url': f'*.{domain}/*',
                 'output': 'json',
                 'collapse': 'urlkey'
             }
@@ -27,6 +28,8 @@ def wayback_machine(domain):
         pass
     except json.decoder.JSONDecodeError:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
     return set(wayback_urls)
 
 
@@ -42,10 +45,10 @@ def common_crawl(domain):
                 for api in json_index:
                     parameters = \
                         {
-                            'url': f'{domain}/*',
+                            'url': f'*.{domain}/*',
                             'output': 'json'
                         }
-
+                    print(f'[-] {api["cdx-api"]}')
                     response = requests.get(api['cdx-api'], params=parameters)
                     if response.status_code == 200:
                         results = [json.loads(result) for result in response.text.splitlines()]
@@ -55,10 +58,14 @@ def common_crawl(domain):
                 pass
             except requests.ConnectionError:
                 pass
+            except KeyboardInterrupt:
+                exit('Bye!')
         else:
             pass
     except requests.ConnectionError:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
     return set(commoncrawl_urls)
 
 
@@ -78,6 +85,8 @@ def url_scan(domain):
 
     except requests.ConnectionError:
         pass
+    except KeyboardInterrupt:
+        exit('Bye!')
     return set(urlscan_urls)
 
 
@@ -113,7 +122,8 @@ def virus_total(domain, apikey=None):
                 pass
             except json.decoder.JSONDecodeError:
                 pass
+            except KeyboardInterrupt:
+                exit('Bye!')
     else:
         pass
     return set(virustotal_urls)
-
