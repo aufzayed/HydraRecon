@@ -103,7 +103,7 @@ def subdomain_enum(domain, path):
     print('[#] certspotter API')
     _cs = certspotter.enumerator(domain)
     print('[#] crt.sh API')
-    _crt = crtsh.enumerator(domain, depth=1)
+    _crt = crtsh.enumerator(domain, depth=5)
     print('[#] bufferover API')
     _dbo = dnsbufferover.enumerator(domain)
     print('[#] entrust API')
