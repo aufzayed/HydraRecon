@@ -74,7 +74,6 @@ parser = argparse.ArgumentParser(usage='\n\nhydrarecon Methods:'
 parser.add_argument('--basic', help='use basic recon module', action='store_true')
 parser.add_argument('--crawl', help='use crawl module', action='store_true')
 parser.add_argument('--config', help='initializing config file', action='store_true')
-parser.add_argument('--only-sub', help='subdoamin enumeration only', action='store_true')
 parser.add_argument('-d', '--domain', metavar='', help='domain to crawl or recon')
 parser.add_argument('-p', '--ports', metavar='', help='ports to scan: (small | large | xlarge). default: small',
                     default='small')
