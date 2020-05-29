@@ -3,51 +3,61 @@ import os
 from bs4 import BeautifulSoup
 
 
-def relative_to_absolute(file, domain):
-    parser = BeautifulSoup(file, 'html.parser')
-    imgs = parser.find_all('img')
-    links = parser.find_all('link')
+def rel_to_abs(doc, domain):
+    parser = BeautifulSoup(doc, 'html.parser')
     scripts = parser.find_all('script')
+    links = parser.find_all('link')
+    imgs = parser.find_all('img')
 
-    for script in scripts:
-        if script.get('src'):
-            if script['src'][0:7] == 'http://' or script['src'][0:8] == 'https://':
-                pass
-            elif script['src'][0:7] == 'http://' or script['src'][0:8] == 'https://' or script['src'][0] != '.' or script['src'][0] != '/':
-                script['src'] = f'{domain}/{script}'
-            elif script['src'][0:2] == '//':
-                script['src'] = f'http:{script["src"]}'
-            elif script['src'][0] == '/' and script['src'][1] != '/':
-                script['src'] = f'{domain}{script["src"]}'
-            elif script['src'][0:2] == './':
-                script['src'] = f'{domain}/{script["src"]}'
-            elif script['src'][0:3] == '../':
-                script['src'] = f'{domain}/{script["src"]}'
-        else:
-            pass
+    # remove csp
+    meta = parser.find_all('meta')
+    for m in meta:
+        csp = m.get('http-equiv')
+        if csp == 'Content-Security-Policy':
+            del m['content']
+            del m['http-equiv']
 
-    for link in links:
-        if link.get('href'):
-            if link['href'][0:2] == '//' or link['href'][0:7] == 'http://' or link['href'][0:8] == 'https://':
-                pass
-            if link['href'][0:2] != '//' or link['href'][0:7] != 'http://' or link['href'][0:8] != 'https://' or link['href'][0] != '/' or link['href'][0] != '.':
-                link['href'] = f'{domain}/{link["href"]}'
-            elif link['href'][0] == '/' and link['src'][1] != '/':
-                link['href'] = f'{domain}{link["href"]}'
-            elif link['href'][0] == '.':
-                link['href'] = f'{domain}{link["href"]}'
+    for s in scripts:
+        src = s.get("src")
+        if src is not None:
+            if src[0:8] == 'https://' or src[0:7] == 'http://':
+                s['src'] = src
+            elif src[0:2] == "//":
+                s['src'] = f'http:{src}'
+            elif src[0] == '/' and src[1] != '/':
+                s['src'] = f'http://{domain}{src}'
+            elif src[0] == '.':
+                s['src'] = f'http://{domain}/{src}'
+            elif src[0] != '.' or src[0] != '/' or src[0:7] != 'http://' or src[0:8] != 'https://':
+                s['src'] = f'http://{domain}/{src}'
 
-    for img in imgs:
-        if img.get('src'):
-            if img['src'][0:2] == '//' or img['src'][0:7] == 'http://' or img['src'][0:8] == 'https://' or img['src'][0:5] == 'data:':
-                pass
-            if img['src'][0:2] != '//' or img['src'][0:7] != 'http://' or img['src'][0:8] != 'https://' or img['src'][0:5] != 'data:' or img['src'][0] != '/' or img['src'][0] != '.':
-                img['src'] = f'{domain}/{img["src"]}'
-            elif img['src'][0] == '/' and img['src'][1] != '/':
-                img['src'] = f'{domain}{img["src"]}'
-            elif img['src'][0] == '.':
-                img['src'] = f'{domain}/{img["src"]}'
+    for l in links:
+        href = l.get('href')
+        if href is not None:
+            if href[0:8] == 'https://' or href[0:7] == 'http://':
+                l['href'] = href
+            elif href[0:2] == "//":
+                l['href'] = f'http:{href}'
+            elif href[0] == '/' and href[1] != '/':
+                l['href'] = f'http://{domain}{href}'
+            elif href[0] == '.':
+                l['href'] = f'http://{domain}/{href}'
+            elif href[0] != '.' or href[0] != '/' or href[0:7] != 'http://' or href[0:8] != 'https://':
+                l['href'] = f'http://{domain}/{href}'
 
+    for i in imgs:
+        isrc = i.get('src')
+        if isrc is not None:
+            if isrc[0:8] == 'https://' or isrc[0:7] == 'http://' or isrc[0:5] == 'data:':
+                i['src'] = isrc
+            elif isrc[0:2] == "//":
+                i['src'] = f'http:{isrc}'
+            elif isrc[0] == '/' and isrc[1] != '/':
+                i['src'] = f'http://{domain}{isrc}'
+            elif isrc[0] == '.':
+                i['src'] = f'http://{domain}/{isrc}'
+            elif isrc[0] != '.' or isrc[0] != '/' or isrc[0:7] != 'http://' or isrc[0:8] != 'https://' or isrc[0:5] != 'data:':
+                i['src'] = f'http://{domain}/{isrc}'
     return parser.prettify()
 
 

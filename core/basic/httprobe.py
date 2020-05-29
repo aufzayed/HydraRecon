@@ -3,7 +3,7 @@ import json
 import requests
 from sys import exit
 from urllib.parse import urlparse
-from core.basic.helpers import sanitizer, relative_to_absolute
+from core.basic.helpers import sanitizer, rel_to_abs
 
 
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0'
@@ -27,7 +27,7 @@ def probe(domain, path_to_save, timeout=1, user_agent=USER_AGENT):
 
         print(f'[#] {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
         with open(f'{path_to_save}/hydra_report/response_body/{sanitized_url}.html', 'w') as html_doc:
-            html_doc.write(relative_to_absolute(http_response.text, f'http://{url.hostname}'))
+            html_doc.write(rel_to_abs(http_response.text, url.hostname))
 
         https_response = requests.get(f'https://{domain}/',
                                       timeout=timeout,
@@ -45,7 +45,7 @@ def probe(domain, path_to_save, timeout=1, user_agent=USER_AGENT):
         session_json.append(html_session)
 
         with open(f'{path_to_save}/hydra_report/response_body/{sanitized_url}.html', 'w') as html_doc:
-            html_doc.write(relative_to_absolute(https_response.text, f'https://{url.hostname}'))
+            html_doc.write(rel_to_abs(https_response.text, url.hostname))
 
         print(f'[#] {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
     except requests.ConnectionError:
