@@ -72,8 +72,10 @@ optional arguments:
  ### Notes
 - if you have virustoal API key use ```python3 hydrarecon.py --config``` (optional)
 - ```--crawl``` option results depends on ```--basic``` results
-
 # Thanks
-- [tomnomnom](https://github.com/tomnomnom) for awasome tools that inspired me
-- [michenriksen](https://github.com/michenriksen) for awasome tool [aquatone](https://github.com/michenriksen/aquatone)
-- awasome regex by [LinkFinder](https://github.com/GerbenJavado/LinkFinder) team
+### this tool inspired by:
+- httprobe, waybackurls by [@tomnomnom](https://github.com/tomnomnom)
+- hakrawler by [@hakluke](https://github.com/hakluke)
+- aquatone by [@michenriksen](https://github.com/michenriksen)
+- LinkFinder by [@GerbenJavado](https://github.com/GerbenJavado)
+- subjs by [@lc](https://github.com/lc)
