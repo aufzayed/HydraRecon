@@ -1,5 +1,5 @@
 # HydraRecon
-Simple recon tool 
+All In One, Fast, Easy Recon Tool 
 
 # Features
 
@@ -13,6 +13,8 @@ Simple recon tool
   * parse sitemap.xml
   * collect archived urls
   
+ # Requirements
+  you need to install [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/) and add the bin file to PATH
  # installation
 ```
 git clone https://github.com/aufzayed/HydraRecon.git
@@ -39,10 +41,6 @@ hydrarecon Methods:
 		- sitemap.xml
 		- robots.txt
 		- related urls: 
-			* wayback machine
-			* virus total
-			* common crawl
-			* urlscan
 
 	3.config :: config hydra
 
@@ -56,6 +54,7 @@ optional arguments:
   --basic          use basic recon module
   --crawl          use crawl module
   --config         initializing config file
+  --session        Generate report from session.json file
   -d , --domain    domain to crawl or recon
   -p , --ports     ports to scan: (small | large | xlarge). default: small
   -T , --timeout   control http request timeout in seconds, default: 1s
