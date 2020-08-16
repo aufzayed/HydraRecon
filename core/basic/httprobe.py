@@ -3,6 +3,7 @@ import json
 import requests
 from sys import exit
 from urllib.parse import urlparse
+from colorama import init, Fore
 from core.basic.helpers import sanitizer, rel_to_abs
 
 
@@ -25,7 +26,7 @@ def probe(domain, path_to_save, timeout=1, user_agent=USER_AGENT):
             }
         session_json.append(html_session)
 
-        print(f'[#] {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
+        print(f'{Fore.BLUE} | {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
         with open(f'{path_to_save}/hydra_report/response_body/{sanitized_url}.html', 'w') as html_doc:
             html_doc.write(rel_to_abs(http_response.text, url.hostname))
 
@@ -47,11 +48,11 @@ def probe(domain, path_to_save, timeout=1, user_agent=USER_AGENT):
         with open(f'{path_to_save}/hydra_report/response_body/{sanitized_url}.html', 'w') as html_doc:
             html_doc.write(rel_to_abs(https_response.text, url.hostname))
 
-        print(f'[#] {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
+        print(f'{Fore.BLUE} | {domain} -> {url.scheme}://{url.hostname} :: {http_response.status_code}')
     except requests.ConnectionError:
         pass
     except requests.exceptions.ReadTimeout:
-        print(f'[#] {domain} -> ReadTimeout Error')
+        print(f'{Fore.BLUE} | {domain} -> {Fore.RED}ReadTimeout Error')
     except KeyboardInterrupt:
         exit('Bye!')
     return json.dumps(response)

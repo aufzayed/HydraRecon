@@ -12,14 +12,14 @@ def robots(domain):
         req = requests.get(f'{domain}/robots.txt', headers={'User-Agent': USER_AGENT})
         lines = req.text.split('\n')
         for line in lines:
-            if line[0:6] == 'Allow' or line[0:9] == 'Disallow':
+            if line[0:5] == 'Allow' or line[0:8] == 'Disallow':
                 try:
                     path = line.split(' ')[1]
                     if path[0] == '/' and path[1] != '/':
                         robots_urls.add(f'{domain}{path}')
                     elif path[0] != '/':
                         robots_urls.add(f'{domain}/{path}')
-                    elif path[0:8] == 'http://' or path[0:9] == 'https://':
+                    elif path[0:7] == 'http://' or path[0:8] == 'https://':
                         robots_urls.add(path)
                     else:
                         pass
@@ -27,7 +27,7 @@ def robots(domain):
                     print(f'[#] Runtime Exception {e}')
                 except KeyboardInterrupt:
                     exit('Bye!')
-            elif line[0:8] == 'Sitemap':
+            elif line[0:7] == 'Sitemap':
                 sitemap = line.split(' ')[1]
                 robots_urls.add(sitemap)
             else:

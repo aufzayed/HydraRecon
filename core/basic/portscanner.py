@@ -2,7 +2,7 @@
 import socket
 from sys import exit
 from concurrent.futures import ThreadPoolExecutor
-
+from colorama import init, Fore
 scanner_results = set()
 
 
@@ -44,7 +44,7 @@ def scan(domain, threads, ports_range='small', path=None):
         ports_range = xlarge
 
     if path is not None:
-        print('[#] Port Scanning...')
+        print(Fore.BLUE + f'[#] {Fore.GREEN}Port Scanning...')
         with open(f'{path}/hydra_report/subs.{domain}.txt') as hosts:
             with ThreadPoolExecutor(max_workers=threads) as executor:
                 for host in hosts:
@@ -53,7 +53,7 @@ def scan(domain, threads, ports_range='small', path=None):
                         executor.submit(port_scanner, host, int(port))
     else:
         pass
-    print('[#] Port Scanning Done!')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Port Scanning Done!')
     if len(scanner_results) != 0:
         with open(f'{path}/hydra_report/port_scanner_results.txt', 'a') as results:
             for i in scanner_results:

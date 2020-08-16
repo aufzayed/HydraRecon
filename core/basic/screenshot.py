@@ -3,6 +3,7 @@ import os
 from sys import exit
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+from colorama import init, Fore
 
 
 def screenshot(path):
@@ -14,10 +15,10 @@ def screenshot(path):
         try:
             driver.get(f'file://{path}/hydra_report/response_body/{file}')
             driver.get_screenshot_as_file(f'{path}/hydra_report/screenshots/{file.split(".html")[0]}.png')
-            print(f'[#] screenshot {file} ok')
+            print(f'{Fore.BLUE} | screenshot {file} ok')
 
         except Exception as e:
-            print(f'Runtime Error:\n{e}')
+            print(f'{Fore.RED}Runtime Error:\n{e}')
         except KeyboardInterrupt:
             exit('Bye!')
 

@@ -6,6 +6,8 @@ import argparse
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import urlparse
+from colorama import init, Fore
 from core.basic import httprobe
 from core.basic import screenshot
 from core.basic import portscanner
@@ -19,19 +21,24 @@ from core.basic.subenum import threatminer
 from core.basic.subenum import urlscan
 from core.basic.subenum import virustotal
 from core.basic.report import report_generator
-from core.crawl import gurl
+from core.crawl.gurl import common_crawl
+from core.crawl.gurl import wayback
+from core.crawl.gurl import url_scan
+from core.crawl.gurl import virus_total
 from core.crawl import jsparser
 from core.crawl import robots
 from core.crawl import sitemap
 
+init()
+
 
 def banner():
-    print('''
+    print(Fore.GREEN + '''
                __           
 |__|   _| _ _ |__)_ _ _  _  
 |  |\/(_|| (_|| \(-(_(_)| ) 
     /                       
-
+Made with ♥ by Abdelrhman(@aufzayed)
 ''')
 
 
@@ -51,7 +58,7 @@ except FileNotFoundError:
     VTOTAL_KEY = None
     pass
 
-parser = argparse.ArgumentParser(usage='\n\nhydrarecon Methods:'
+parser = argparse.ArgumentParser(usage=Fore.BLUE + '\n\nhydrarecon Methods:'
                                        '\n\t1.basic :: '
                                        '\n\t\t- subdomain enumeration'
                                        '\n\t\t- scan common ports'
@@ -60,11 +67,7 @@ parser = argparse.ArgumentParser(usage='\n\nhydrarecon Methods:'
                                        '\n\t2.crawl :: '
                                        '\n\t\t- sitemap.xml'
                                        '\n\t\t- robots.txt'
-                                       '\n\t\t- related urls: '
-                                       '\n\t\t\t* wayback machine'
-                                       '\n\t\t\t* virus total'
-                                       '\n\t\t\t* common crawl'
-                                       '\n\t\t\t* urlscan\n'
+                                       '\n\t\t- related urls'
                                        '\n\t3.config :: config hydra\n\n'
                                        'examples:'
                                        '\n\tpython3 hydrarecon.py --basic -d example.com'
@@ -74,6 +77,7 @@ parser = argparse.ArgumentParser(usage='\n\nhydrarecon Methods:'
 parser.add_argument('--basic', help='use basic recon module', action='store_true')
 parser.add_argument('--crawl', help='use crawl module', action='store_true')
 parser.add_argument('--config', help='initializing config file', action='store_true')
+parser.add_argument('--session', help='Generate report from session.json file', action='store_true')
 parser.add_argument('-d', '--domain', metavar='', help='domain to crawl or recon')
 parser.add_argument('-p', '--ports', metavar='', help='ports to scan: (small | large | xlarge). default: small',
                     default='small')
@@ -85,8 +89,16 @@ parser.add_argument('-o', '--out', metavar='', help='path to save report, defaul
 args = parser.parse_args()
 
 
+def check_domain_input(domain):
+    if domain.startswith('https://') or domain.startswith('http://'):
+        url_parse = urlparse(domain)
+        return url_parse.hostname
+    else:
+        return domain
+
+
 def init_hydra_report(path):
-    print('[#] initializing HydraRecon report')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}initializing HydraRecon report')
     try:
         os.mkdir(f'{path}/hydra_report')
         os.mkdir(f'{path}/hydra_report/response_body')
@@ -98,25 +110,25 @@ def init_hydra_report(path):
 
 def subdomain_enum(domain, path):
     subdomains = set()
-    print('[#] Collecting Subdomains')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Collecting Subdomains')
     time.sleep(1)
-    print('[#] certspotter API')
+    print(f'{Fore.BLUE} | certspotter API')
     _cs = certspotter.enumerator(domain)
-    print('[#] crt.sh API')
+    print(f'{Fore.BLUE} | crt.sh API')
     _crt = crtsh.enumerator(domain, depth=5)
-    print('[#] bufferover API')
+    print(f'{Fore.BLUE} | bufferover API')
     _dbo = dnsbufferover.enumerator(domain)
-    print('[#] entrust API')
+    print(f'{Fore.BLUE} | entrust API')
     _et = entrust.enumerator(domain)
-    print('[#] hackertarget API')
+    print(f'{Fore.BLUE} | hackertarget API')
     _ht = hackertarget.enumerator(domain)
-    print('[#] threatcrowd API')
+    print(f'{Fore.BLUE} | threatcrowd API')
     _tc = threatcrowd.enumerator(domain)
-    print('[#] threatminer API')
+    print(f'{Fore.BLUE} | threatminer API')
     _tm = threatminer.enumerator(domain)
-    print('[#] urlscan API')
+    print(f'{Fore.BLUE} | urlscan API')
     _us = urlscan.enumerator(domain)
-    print('[#] virustotal API')
+    print(f'{Fore.BLUE} | virustotal API')
     _vt = virustotal.enumerator(domain, apikey=VTOTAL_KEY)
 
     for subdomain in itertools.chain(_cs, _crt, _dbo, _et, _ht, _tc, _tm, _us, _vt):
@@ -135,6 +147,7 @@ def subdomain_enum(domain, path):
 
 
 def probe(domain, threads, path, timeout):
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Checking subdomains')
     with open(f'{path}/hydra_report/subs.{domain}.txt') as domains:
         with ThreadPoolExecutor(max_workers=threads) as executor:
             for domain in domains:
@@ -143,13 +156,13 @@ def probe(domain, threads, path, timeout):
 
 
 def take_screenshot(path):
-    print('[#] Take Screenshot for subdomains')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Take Screenshot for subdomains')
     time.sleep(1)
     screenshot.screenshot(path)
 
 
 def parse_js(path, threads):
-    print('[#] Parsing Javascript Files')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Parsing Javascript Files')
     js_links = jsparser.get_links(f'{path}/hydra_report/response_body')
     with ThreadPoolExecutor(max_workers=threads) as executor:
         for link in js_links:
@@ -158,36 +171,37 @@ def parse_js(path, threads):
 
 
 def gurl_crawler(path, domain):
-    print(f'[#] Collecting {domain} urls from wayback machine')
-    _wb_crawler = gurl.wayback_machine(domain)
-    print(f'[#] Collecting {domain} urls from common crawl')
-    _cc_crawler = gurl.common_crawl(domain)
-    print(f'[#] Collecting {domain} urls from url scan')
-    _us_crawler = gurl.url_scan(domain)
-    print(f'[#] Collecting {domain} urls from virus total')
-    _vt_crawler = gurl.virus_total(domain)
-    with open(f'{path}/hydra_report/crawler/{domain}.wayback.txt', 'a') as wb_urls:
-        for url in itertools.chain(_wb_crawler, _cc_crawler, _us_crawler, _vt_crawler):
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Get {domain} urls')
+    print(f'{Fore.BLUE} | wayback API')
+    _wb_crawler = wayback.api(domain)
+    print(f'{Fore.BLUE} | common crawl API')
+    _cc_crawler = common_crawl.api(domain)
+    print(f'{Fore.BLUE} | urlscan API')
+    _us_crawler = url_scan.api(domain)
+    print(f'{Fore.BLUE} | virustotal API')
+    _vt_crawler = virus_total.api(domain)
+    with open(f'{path}/hydra_report/crawler/{domain}.urls.txt', 'a') as wb_urls:
+        for url in itertools.chain(_wb_crawler, common_crawl.URLs, _us_crawler, _vt_crawler):
             wb_urls.write(f'{url}\n')
 
 
 def crawl_robots(path, threads,  domain):
-    print(f'[#] Collecting {domain} robots.txt urls')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Collecting {domain} robots.txt urls')
     with open(f'{path}/hydra_report/session.json') as session:
         hosts = json.load(session)
         with ThreadPoolExecutor(max_workers=threads) as executor:
-            for host in hosts:
-                executor.submit(robots.robots, host['url'])
+            for h in hosts:
+                executor.submit(robots.robots, h['url'])
     robots.save(path)
 
 
 def crawl_sitemap(path, threads, domain):
-    print(f'[#] Collecting {domain} sitemap urls')
+    print(Fore.BLUE + f'[#] {Fore.GREEN}Collecting {domain} sitemap urls')
     with open(f'{path}/hydra_report/session.json') as session:
         hosts = json.load(session)
         with ThreadPoolExecutor(max_workers=threads) as executor:
-            for host in hosts:
-                executor.submit(sitemap.get_urls, host)
+            for h in hosts:
+                executor.submit(sitemap.get_urls, h['domain'])
     sitemap.save(path)
 
 
@@ -212,31 +226,37 @@ if args.config:
 else:
     pass
 
-if not args.basic and not args.crawl:
-    print('Please Choose a Method')
+# check if provided domain is clear or not
+# if domain is provided with http schema
+# the check_domain_input will remove it and return hostname
+try:
+    host = check_domain_input(args.domain)
+except AttributeError:
+    pass
+
+if not args.basic and not args.crawl and not args.session and not args.config:
+    print(Fore.RED + '[!] Please Choose Method')
     sys.exit()
+elif args.session:
+    if args.out is None:
+        path_to_save = HOME_PATH
+    else:
+        path_to_save = os.path.abspath(args.out)
+    take_screenshot(path_to_save)
+    report_generator.render(path_to_save)
+
 elif args.basic and not args.crawl:
     if args.out is None:
         path_to_save = HOME_PATH
     else:
         path_to_save = os.path.abspath(args.out)
 
-    if args.threads == 10:
-        workers = 10
-    else:
-        workers = args.threads
-
-    if args.timeout == 1:
-        time_out = args.timeout
-    else:
-        time_out = args.timeout
-
     init_hydra_report(path_to_save)
-    subdomain_enum(args.domain, path_to_save)
-    probe(args.domain, workers, path_to_save, timeout=time_out)
+    subdomain_enum(host, path_to_save)
+    probe(host, args.threads, path_to_save, timeout=args.timeout)
     httprobe.save_session(path_to_save)
     take_screenshot(path_to_save)
-    portscanner.scan(args.domain, workers, ports_range=args.ports, path=path_to_save)
+    portscanner.scan(host, args.threads, ports_range=args.ports, path=path_to_save)
     report_generator.render(path_to_save)
 
 elif not args.basic and args.crawl:
@@ -245,14 +265,9 @@ elif not args.basic and args.crawl:
     else:
         path_to_save = args.out
 
-    if args.threads == 10:
-        workers = 10
-    else:
-        workers = args.threads
-
-    parse_js(path_to_save, workers)
-    gurl_crawler(path_to_save, args.domain)
-    crawl_robots(path_to_save, workers, args.domain)
-    crawl_sitemap(path_to_save, workers,  args.domain)
+    parse_js(path_to_save, args.threads)
+    gurl_crawler(path_to_save, host)
+    crawl_robots(path_to_save, args.threads, host)
+    crawl_sitemap(path_to_save, args.threads,  host)
 else:
     pass
