@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from sys import exit
-import requests
+from urllib import parse
 from bs4 import BeautifulSoup as bsoup
-
+import requests
 
 def get_sitemap(domain):
     try:
@@ -37,7 +37,7 @@ sitemap_urls = set()
 
 def get_urls(domain):
     for url in xml_parse(domain):
-        if url.endswith('.xml'):
+        if parse.urlparse(url).path.endswith('.xml'):
             for u in xml_parse(url):
                 sitemap_urls.add(u)
         else:
