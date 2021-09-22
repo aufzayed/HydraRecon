@@ -4,3 +4,4 @@ lxml
 requests
 selenium
 urllib3
+colorama
