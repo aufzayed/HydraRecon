@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 import time
@@ -10,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlparse
 from colorama import init, Fore
-import core.basic.subenum
+from core.basic.subenum import *
 from core.basic import httprobe
 from core.basic import screenshot
 from core.basic import portscanner
@@ -27,12 +26,12 @@ init()
 
 
 def banner():
-    print(Fore.GREEN + '''
+    print(Fore.GREEN + f'''
                __           
 |__|   _| _ _ |__)_ _ _  _  
 |  |\/(_|| (_|| \(-(_(_)| ) 
     /                       
-Made with ♥ by Abdelrhman(@aufzayed)
+Made with {Fore.RED}♥{Fore.GREEN} by Abdelrhman(@aufzayed)
 ''')
 
 
