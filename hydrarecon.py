@@ -1,15 +1,5 @@
-from core.basic.subenum import sublist3r_api
-from core.basic.subenum.wayback_api import wayback_api
-from core.basic.subenum.anubis import anubis_api
-from core.basic.subenum.alienvault import alienvault_api
-from core.basic.subenum.virustotal import virustotal_api
-from core.basic.subenum.urlscan import urlscan_api
-from core.basic.subenum.threatminer import threatminer_api
-from core.basic.subenum.threatcrowd import threadcrowd_api
-from core.basic.subenum.hackertarget import hackertraget_api
-from core.basic.subenum.dnsbufferover import dnsbufferover_api
-from core.basic.subenum.crtsh import crtsh_api
-from core.basic.subenum.certspotter import certspotter_api
+#!/usr/bin/env python3
+
 import os
 import sys
 import time
