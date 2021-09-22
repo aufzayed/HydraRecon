@@ -4,13 +4,13 @@ import requests
 from bs4 import BeautifulSoup as bsoup
 
 
-def get_sitemap(your_input):
+def get_sitemap(domain):
     try:
-        sitemap_xml = requests.get(f'http://{your_input}/sitemap.xml')
+        sitemap_xml = requests.get(f'http://{domain}/sitemap.xml')
         if sitemap_xml.status_code == 200:
             return sitemap_xml.text
         elif sitemap_xml.status_code != 200:
-            sitemap_xml = requests.get(f'http://{your_input}/sitemaps/sitemap.xml')
+            sitemap_xml = requests.get(f'http://{domain}/sitemaps/sitemap.xml')
             return sitemap_xml
         else:
             return 0

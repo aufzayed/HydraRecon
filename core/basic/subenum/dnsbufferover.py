@@ -1,34 +1,19 @@
 #!/usr/bin/env python3
-from sys import exit
-import json
 import requests
 
 
-def enumerator(domain):
+def dnsbufferover_api(hostname):
     domains = []
     try:
-        response = requests.get('https://dns.bufferover.run/dns', params={'q': domain})
-        buffer_response = json.loads(response.text)
-        try:
-            for i in buffer_response['FDNS_A']:
-                try:
-                    domains.append(i.split(',')[1])
-                except IndexError:
-                    domains.append(i)
-        except TypeError:
-            pass
-        try:
-            for i in buffer_response['RDNS']:
-                try:
-                    domains.append(i.split(',')[1])
-                except IndexError:
-                    domains.append(i)
-        except TypeError:
-            pass
-    except json.decoder.JSONDecodeError:
-        pass
-    except requests.ConnectionError:
-        pass
-    except KeyboardInterrupt:
-        exit('Bye!')
+        response = requests.get('https://dns.bufferover.run/dns', params={'q': hostname})
+        buffer_response = response.json()
+
+        fdns = [d.split(',')[1] for d in buffer_response['FDNS_A']]
+        domains.extend(fdns)
+
+        rdns = [d.split(',')[1] for d in buffer_response['RDNS']]
+        domains.extend(rdns)
+
+    except Exception as e:
+        print(f'[!][dnsbufferover] Runtime Error {e}')
     return set(domains)

@@ -1,3 +1,15 @@
+from core.basic.subenum import sublist3r_api
+from core.basic.subenum.wayback_api import wayback_api
+from core.basic.subenum.anubis import anubis_api
+from core.basic.subenum.alienvault import alienvault_api
+from core.basic.subenum.virustotal import virustotal_api
+from core.basic.subenum.urlscan import urlscan_api
+from core.basic.subenum.threatminer import threatminer_api
+from core.basic.subenum.threatcrowd import threadcrowd_api
+from core.basic.subenum.hackertarget import hackertraget_api
+from core.basic.subenum.dnsbufferover import dnsbufferover_api
+from core.basic.subenum.crtsh import crtsh_api
+from core.basic.subenum.certspotter import certspotter_api
 import os
 import sys
 import time
@@ -8,18 +20,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlparse
 from colorama import init, Fore
+import core.basic.subenum
 from core.basic import httprobe
 from core.basic import screenshot
 from core.basic import portscanner
-from core.basic.subenum import certspotter
-from core.basic.subenum import crtsh
-from core.basic.subenum import dnsbufferover
-from core.basic.subenum import entrust
-from core.basic.subenum import hackertarget
-from core.basic.subenum import threatcrowd
-from core.basic.subenum import threatminer
-from core.basic.subenum import urlscan
-from core.basic.subenum import virustotal
 from core.basic.report import report_generator
 from core.crawl.gurl import common_crawl
 from core.crawl.gurl import wayback
@@ -59,20 +63,20 @@ except FileNotFoundError:
     pass
 
 parser = argparse.ArgumentParser(usage=Fore.BLUE + '\n\nhydrarecon Methods:'
-                                       '\n\t1.basic :: '
-                                       '\n\t\t- subdomain enumeration'
-                                       '\n\t\t- scan common ports'
-                                       '\n\t\t- screenshot hosts'
-                                       '\n\t\t- html report'
-                                       '\n\t2.crawl :: '
-                                       '\n\t\t- sitemap.xml'
-                                       '\n\t\t- robots.txt'
-                                       '\n\t\t- related urls'
-                                       '\n\t3.config :: config hydra\n\n'
+                                       '\n1.basic :: '
+                                       '\n\t- subdomain enumeration'
+                                       '\n\t- scan common ports'
+                                       '\n\t- screenshot hosts'
+                                       '\n\t- html report'
+                                       '\n2.crawl :: '
+                                       '\n\t- sitemap.xml'
+                                       '\n\t- robots.txt'
+                                       '\n\t- related urls'
+                                       '\n3.config :: config hydra\n\n'
                                        'examples:'
-                                       '\n\tpython3 hydrarecon.py --basic -d example.com'
-                                       '\n\tpython3 hydrarecon.py --crawl -d example.com'
-                                       '\n\tpython3 hydrarecon.py --config')
+                                       '\npython3 hydrarecon.py --basic -d example.com'
+                                       '\npython3 hydrarecon.py --crawl -d example.com'
+                                       '\npython3 hydrarecon.py --config')
 
 parser.add_argument('--basic', help='use basic recon module', action='store_true')
 parser.add_argument('--crawl', help='use crawl module', action='store_true')
@@ -113,25 +117,31 @@ def subdomain_enum(domain, path):
     print(Fore.BLUE + f'[#] {Fore.GREEN}Collecting Subdomains')
     time.sleep(1)
     print(f'{Fore.BLUE} | certspotter API')
-    _cs = certspotter.enumerator(domain)
+    _cs = certspotter_api(domain)
     print(f'{Fore.BLUE} | crt.sh API')
-    _crt = crtsh.enumerator(domain, depth=5)
+    _crt = crtsh_api(domain, depth=5)
     print(f'{Fore.BLUE} | bufferover API')
-    _dbo = dnsbufferover.enumerator(domain)
-    print(f'{Fore.BLUE} | entrust API')
-    _et = entrust.enumerator(domain)
+    _dbo = dnsbufferover_api(domain)
     print(f'{Fore.BLUE} | hackertarget API')
-    _ht = hackertarget.enumerator(domain)
+    _ht = hackertraget_api(domain)
     print(f'{Fore.BLUE} | threatcrowd API')
-    _tc = threatcrowd.enumerator(domain)
+    _tc = threadcrowd_api(domain)
     print(f'{Fore.BLUE} | threatminer API')
-    _tm = threatminer.enumerator(domain)
+    _tm = threatminer_api(domain)
     print(f'{Fore.BLUE} | urlscan API')
-    _us = urlscan.enumerator(domain)
+    _us = urlscan_api(domain)
     print(f'{Fore.BLUE} | virustotal API')
-    _vt = virustotal.enumerator(domain, apikey=VTOTAL_KEY)
+    _vt = virustotal_api(domain, apikey=VTOTAL_KEY)
+    print(f'{Fore.BLUE} | alienvault API')
+    _av = alienvault_api(domain)
+    print(f'{Fore.BLUE} | sublist3r API')
+    _sub = sublist3r_api(domain)
+    print(f'{Fore.BLUE} | anubis API')
+    _anu = anubis_api(domain)
+    print(f'{Fore.BLUE} | wayback API')
+    _way = wayback_api(domain)
 
-    for subdomain in itertools.chain(_cs, _crt, _dbo, _et, _ht, _tc, _tm, _us, _vt):
+    for subdomain in itertools.chain(_cs, _crt, _dbo, _ht, _tc, _tm, _us, _vt, _av, _sub, _anu, _way):
         if subdomain.startswith('*'):
             subdomain = subdomain.split('*.')[1]
             if subdomain.endswith(f'.{domain}'):

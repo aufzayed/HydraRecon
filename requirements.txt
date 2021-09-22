@@ -1,6 +1,6 @@
-beautifulsoup4==4.9.0
-Jinja2==2.11.2
-lxml==4.5.0
-requests==2.23.0
-selenium==3.141.0
-urllib3==1.25.9
+beautifulsoup4
+Jinja2
+lxml
+requests
+selenium
+urllib3

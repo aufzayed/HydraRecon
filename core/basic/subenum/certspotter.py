@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
-from sys import exit
-import json
 import requests
 
 
-def enumerator(target):
-    domains = []
+def certspotter_api(hostname):
     try:
-
-        response = requests.get('https://certspotter.com/api/v0/certs', params={'domain': target})
-        json_response = json.loads(response.text)
-        for domain_info in json_response:
-            for domain in domain_info['dns_names']:
-                domains.append(domain)
-        return set(domains)
-    except json.decoder.JSONDecodeError:
-        pass
-    except requests.ConnectionError:
-        pass
-    except TypeError:
-        pass
-    except KeyboardInterrupt:
-        exit('Bye!')
+        parameters = {
+            'domain': hostname,
+            'include_subdomains': True,
+            'match_wildcards': True,
+            'expand': 'dns_names'
+        }
+        response = requests.get('https://certspotter.com/api/v1/issuances', params=parameters)
+        domains_list = [domain for domain in response.json() for domain in domain['dns_names']]
+        return domains_list
+    except Exception as e:
+        print(f'[!][certspotter] Runtime Error: {e}')
+        return []

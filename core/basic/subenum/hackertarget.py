@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-from sys import exit
 import requests
 
 
-def enumerator(domain):
-    domains = []
+def hackertraget_api(hostname):
     try:
-        response = requests.get('https://api.hackertarget.com/hostsearch/', params={'q': domain})
-        for i in response.text.split('\n'):
-            domains.append(i.split(',')[0])
-    except requests.ConnectionError:
-        pass
-    except KeyboardInterrupt:
-        exit('Bye!')
-    return set(domains)
+        response = requests.get('https://api.hackertarget.com/hostsearch/', params={'q': hostname})
+        domains = [i.split(',')[0] for i in response.text.split('\n')]
+        return set(domains)
+    except Exception as e:
+        print(f'[!][hackertraget] Runtime Error: {e}')
+        return []
