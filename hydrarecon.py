@@ -264,6 +264,7 @@ elif not args.basic and args.crawl:
     else:
         path_to_save = args.out
 
+    init_hydra_report(path_to_save)
     parse_js(path_to_save, args.threads)
     gurl_crawler(path_to_save, host)
     crawl_robots(path_to_save, args.threads, host)
