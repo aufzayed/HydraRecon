@@ -155,6 +155,7 @@ def probe(domain, threads, path, timeout):
 
 
 def take_screenshot(path):
+
     print(Fore.BLUE + f'[#] {Fore.GREEN}Take Screenshot for subdomains')
     time.sleep(1)
     screenshot.screenshot(path)
@@ -241,8 +242,11 @@ elif args.session:
         path_to_save = HOME_PATH
     else:
         path_to_save = os.path.abspath(args.out)
-    take_screenshot(path_to_save)
-    report_generator.render(path_to_save)
+    if os.path.isdir(f'{HOME_PATH}/hydra_report'):
+        take_screenshot(path_to_save)
+        report_generator.render(path_to_save)
+    else:
+        print(Fore.RED + '[!] Please Do --basic Method')
 
 elif args.basic and not args.crawl:
     if args.out is None:
